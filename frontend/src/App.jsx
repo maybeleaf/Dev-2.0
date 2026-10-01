@@ -1,3 +1,6 @@
+import react from 'react' 
+import goodnightoldfriend from './goodnightoldfriend.png'
+
 function App() {
   return (
     <main>
@@ -7,6 +10,7 @@ function App() {
       <p className="quote">
         "Vacation is supposed to be a break, don't make planning it a hassle."
       </p>
+       <img src={goodnightoldfriend} alt="goodnightoldfriend" />
     </main>
   )
 }
