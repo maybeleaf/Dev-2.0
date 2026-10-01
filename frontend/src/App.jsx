@@ -1,5 +1,4 @@
-import react from 'react' 
-import goodnightoldfriend from './goodnightoldfriend.png'
+import goodnightoldfriend from './assets/goodnightolfriend.jpeg'
 
 function App() {
   return (
