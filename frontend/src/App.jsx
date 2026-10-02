@@ -42,7 +42,7 @@ function App() {
           <p className="eyebrow">Travel planning, simplified</p>
           <h1>Where will you go next?</h1>
           <p className="hero-text">
-            Search a place, find a feeling, and let the rest unfold.
+            Vacation is supposed to be a break, don't make planning it a hassle.
           </p>
         </section>
 
