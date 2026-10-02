@@ -59,7 +59,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="site-footer" id="contact">Lift Off · Take the long way</footer>
+      <footer className="site-footer" id="contact">Lift Off · Rest while we do the rest</footer>
     </div>
   )
 }
