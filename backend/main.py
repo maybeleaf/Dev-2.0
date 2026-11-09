@@ -1,10 +1,12 @@
 """FastAPI application for the Lift Off backend."""
 
+import json
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.db import get_connection, init_db
 from backend.services.API_calling import (
     get_coordinates,
     get_historical_weather,
@@ -12,6 +14,8 @@ from backend.services.API_calling import (
 
 
 app = FastAPI(title="Lift Off API")
+
+init_db()
 
 app.add_middleware(
     CORSMiddleware,
@@ -68,3 +72,36 @@ def weather(
         "location": coordinates,
         "weather": weather_data,
     }
+
+@app.get("/trips")
+def list_trips() -> list[dict[str, Any]]:
+    """Return all saved trips, newest first."""
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT data FROM trips ORDER BY updated_at DESC"
+        ).fetchall()
+    return [json.loads(row["data"]) for row in rows]
+
+
+@app.put("/trips/{trip_id}")
+def save_trip(trip_id: str, trip: dict[str, Any] = Body(...)) -> dict[str, str]:
+    """Create or update a trip."""
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO trips (id, data) VALUES (?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                data = excluded.data,
+                updated_at = CURRENT_TIMESTAMP
+            """,
+            (trip_id, json.dumps(trip)),
+        )
+    return {"id": trip_id}
+
+
+@app.delete("/trips/{trip_id}")
+def delete_trip(trip_id: str) -> dict[str, str]:
+    """Delete a trip."""
+    with get_connection() as conn:
+        conn.execute("DELETE FROM trips WHERE id = ?", (trip_id,))
+    return {"id": trip_id}
