@@ -7,6 +7,7 @@ from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db import get_connection, init_db
+from backend.search_routes import router as search_router
 from backend.services.API_calling import (
     get_coordinates,
     get_historical_weather,
@@ -16,6 +17,7 @@ from backend.services.API_calling import (
 app = FastAPI(title="Lift Off API")
 
 init_db()
+app.include_router(search_router)
 
 app.add_middleware(
     CORSMiddleware,
