@@ -1,0 +1,438 @@
+/* ————————————————————————————————————————————————
+   Explore (search + filters) and the destination guide page.
+   ———————————————————————————————————————————————— */
+
+.explore-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  align-items: end;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.explore-search > .input {
+  min-height: 54px;
+  padding-left: 2.7rem;
+  padding-right: 3rem;
+  border-radius: var(--radius-pill);
+  font-size: 1.02rem;
+}
+
+.explore-search > svg {
+  left: 1.05rem;
+}
+
+.explore-clear {
+  position: absolute;
+  right: 0.45rem;
+}
+
+.explore-origin {
+  min-width: 0;
+}
+
+.filters-toggle {
+  display: none;
+}
+
+.explore-filters {
+  display: grid;
+  gap: 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+.explore-selects {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.9rem 1rem;
+}
+
+.explore-reset {
+  justify-self: start;
+}
+
+.explore-results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.explore-count {
+  color: var(--ink-2);
+}
+
+.explore-sort {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.explore-sort .select {
+  width: auto;
+  min-height: 40px;
+}
+
+@media (max-width: 860px) {
+  .explore-bar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .explore-origin {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .filters-toggle {
+    display: inline-flex;
+    min-height: 54px;
+  }
+
+  .explore-filters {
+    display: none;
+  }
+
+  .explore-filters.is-open {
+    display: grid;
+    animation: fade-up 220ms var(--ease) both;
+  }
+}
+
+/* ——— Destination guide ——— */
+.dp-hero {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: clamp(16rem, 36vw, 25rem);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  isolation: isolate;
+}
+
+.dp-hero > .dp-hero-poster.poster {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+}
+
+.dp-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgb(8 12 10 / 0) 30%, rgb(8 12 10 / 0.72) 100%);
+}
+
+.dp-hero-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: clamp(1.2rem, 3.5vw, 2.4rem);
+  color: #fff;
+  text-shadow: 0 1px 14px rgb(0 0 0 / 0.35);
+}
+
+.dp-name {
+  color: #fff;
+  font-size: clamp(2.6rem, 8vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+  font-variation-settings: 'opsz' 144;
+}
+
+.dp-country {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.dp-tagline {
+  max-width: 38ch;
+  margin-top: 0.6rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-style: italic;
+}
+
+.dp-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  text-shadow: none;
+}
+
+.dp-layout {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 1000px) {
+  .dp-layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+
+  .dp-side {
+    position: sticky;
+    top: calc(var(--header-h) + 16px);
+  }
+}
+
+.dp-main,
+.dp-side {
+  min-width: 0;
+}
+
+.dp-intro {
+  max-width: 68ch;
+  font-size: 1.08rem;
+}
+
+.dp-vibes {
+  margin-top: 0.85rem;
+}
+
+.dp-section-title {
+  margin-bottom: 0.9rem;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+}
+
+/* climate chart */
+/* Long month lists wrap instead of pushing the card past a phone's width. */
+.climate-best {
+  white-space: normal;
+}
+
+.climate {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 0.35rem;
+  height: 190px;
+  margin-top: 1rem;
+}
+
+.climate li {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  height: 100%;
+  gap: 0.25rem;
+}
+
+.climate-temp {
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.climate-track {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  max-width: 34px;
+  height: 100%;
+}
+
+.climate-bar {
+  width: 100%;
+  height: calc(var(--h) * 100%);
+  min-height: 6px;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(180deg, var(--accent-bright), color-mix(in srgb, var(--accent) 55%, var(--sky)));
+  opacity: 0.45;
+  transition: opacity 160ms var(--ease);
+}
+
+.climate li.is-best .climate-bar {
+  opacity: 1;
+}
+
+.climate li.is-now .climate-month {
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.climate-month {
+  padding: 0.05rem 0.35rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.climate li.is-best .climate-month {
+  color: var(--ink);
+}
+
+.climate-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  margin-top: 0.85rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.climate-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.climate-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--accent-bright);
+}
+
+.climate-swatch.is-off {
+  opacity: 0.45;
+}
+
+/* neighbourhoods */
+.hoods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 0.75rem;
+}
+
+.hood {
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.hood-name {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+
+.hood p {
+  margin-top: 0.2rem;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+/* things to do */
+.todo-tools {
+  display: grid;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.todo-tools-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+}
+
+.todo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 0.85rem;
+}
+
+.todo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--c, var(--line-strong));
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.todo-kicker {
+  color: color-mix(in srgb, var(--c) 62%, var(--ink));
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.todo-name {
+  font-size: 1.1rem;
+  line-height: 1.25;
+}
+
+.todo-desc {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.todo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.85rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.todo-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.todo-meta svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.todo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.todo-more {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* side facts */
+.dp-time {
+  display: grid;
+  gap: 0.15rem;
+  margin-top: 0.75rem;
+}
+
+.dp-time-now {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.dp-cost {
+  margin-top: 0.75rem;
+}
+
+.dp-cost-total {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+}

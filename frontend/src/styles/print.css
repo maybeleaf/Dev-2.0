@@ -1,0 +1,120 @@
+/* Print / "Save as PDF": ink on paper, no chrome, nothing split across pages. */
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  :root,
+  :root[data-theme] {
+    --paper: #fff;
+    --paper-2: #f3f3f3;
+    --paper-3: #e6e6e6;
+    --card: #fff;
+    --card-2: #fff;
+    --ink: #000;
+    --ink-2: #1a1a1a;
+    --muted: #4a4a4a;
+    --line: #c9c9c9;
+    --line-strong: #9a9a9a;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --text-scale: 0.92;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  body {
+    padding-bottom: 0 !important;
+  }
+
+  .site-header,
+  .site-footer,
+  .tabbar,
+  .skip-link,
+  .toaster,
+  .grain::after,
+  .trip-actions,
+  .trip-alerts,
+  .trip-tabs,
+  .crumbs,
+  .day-strip,
+  .day-actions,
+  .tl-actions,
+  .tl-issue-fix,
+  .itin-map,
+  .stays-filters,
+  .flight-tools,
+  .menu-host,
+  .tm,
+  .tm-pill,
+  .btn,
+  .link-btn,
+  dialog {
+    display: none !important;
+  }
+
+  .trip-hero {
+    min-height: 0 !important;
+    color: #000 !important;
+    box-shadow: none !important;
+  }
+
+  .trip-hero-poster,
+  .trip-hero-shade {
+    display: none !important;
+  }
+
+  .trip-hero-content {
+    padding: 0 0 0.5rem !important;
+    text-shadow: none !important;
+  }
+
+  .trip-title,
+  .trip-route,
+  .trip-meta li {
+    color: #000 !important;
+  }
+
+  .trip-meta li,
+  .trip-status {
+    border-color: #999 !important;
+    background: none !important;
+  }
+
+  .card,
+  .tl-card,
+  .pass,
+  .stay-card,
+  .checklist-group,
+  .oday,
+  .timeline > li {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  .itin-grid,
+  .overview,
+  .budget-grid,
+  .stays-layout {
+    display: block !important;
+  }
+
+  .overview-side,
+  .budget-grid > * + * {
+    margin-top: 1.25rem;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .checklist input[type='checkbox'] {
+    appearance: auto;
+  }
+}

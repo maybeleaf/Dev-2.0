@@ -1,0 +1,120 @@
+/* ——— My trips ——— */
+.trips-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.trips-search {
+  flex: 1 1 260px;
+}
+
+.trips-search > .input {
+  padding-left: 2.6rem;
+  border-radius: var(--radius-pill);
+}
+
+.trips-tools .chip .live-dot {
+  margin-right: 0.15rem;
+}
+
+.trips-tools .chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 1.15rem;
+}
+
+.trip-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  transition:
+    box-shadow 180ms var(--ease),
+    transform 180ms var(--ease);
+}
+
+.trip-card:hover,
+.trip-card:focus-within {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.trip-card:has(.stretched-link:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.trip-card.is-live {
+  border-color: color-mix(in srgb, var(--success) 50%, var(--line));
+}
+
+.trip-card.is-past .trip-card-poster {
+  filter: saturate(0.6);
+}
+
+.trip-card-status {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2;
+  box-shadow: var(--shadow-sm);
+}
+
+.trip-card-status:not(.badge-ink):not(.badge-success) {
+  background: var(--card);
+}
+
+.trip-card-status .live-dot {
+  margin-right: 0.2rem;
+}
+
+.trip-card-body {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: 0.3rem;
+  padding: 1rem 1.1rem 0.6rem;
+}
+
+.trip-card-title {
+  font-size: 1.22rem;
+  line-height: 1.25;
+}
+
+.trip-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.trip-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.85rem;
+  margin-top: 0.35rem;
+  color: var(--ink-2);
+  font-size: 0.84rem;
+}
+
+.trip-card-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem 0.9rem 1.1rem;
+}
+
+.trips-empty {
+  max-width: 560px;
+  margin-inline: auto;
+}
