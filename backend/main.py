@@ -3,9 +3,11 @@
 import json
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.auth import current_user
+from backend.auth import router as auth_router
 from backend.db import get_connection, init_db
 from backend.search_routes import router as search_router
 from backend.services.API_calling import (
@@ -18,6 +20,7 @@ app = FastAPI(title="Lift Off API")
 
 init_db()
 app.include_router(search_router)
+app.include_router(auth_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -76,34 +79,42 @@ def weather(
     }
 
 @app.get("/trips")
-def list_trips() -> list[dict[str, Any]]:
-    """Return all saved trips, newest first."""
+def list_trips(user: dict = Depends(current_user)) -> list[dict[str, Any]]:
+    """Return the logged-in user's trips, newest first."""
     with get_connection() as conn:
         rows = conn.execute(
-            "SELECT data FROM trips ORDER BY updated_at DESC"
+            "SELECT data FROM trips WHERE user_id = ? ORDER BY updated_at DESC",
+            (user["id"],),
         ).fetchall()
     return [json.loads(row["data"]) for row in rows]
 
 
 @app.put("/trips/{trip_id}")
-def save_trip(trip_id: str, trip: dict[str, Any] = Body(...)) -> dict[str, str]:
-    """Create or update a trip."""
+def save_trip(
+    trip_id: str,
+    trip: dict[str, Any] = Body(...),
+    user: dict = Depends(current_user),
+) -> dict[str, str]:
+    """Create or update one of the logged-in user's trips."""
     with get_connection() as conn:
         conn.execute(
             """
-            INSERT INTO trips (id, data) VALUES (?, ?)
+            INSERT INTO trips (id, data, user_id) VALUES (?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 data = excluded.data,
                 updated_at = CURRENT_TIMESTAMP
+            WHERE trips.user_id = excluded.user_id
             """,
-            (trip_id, json.dumps(trip)),
+            (trip_id, json.dumps(trip), user["id"]),
         )
     return {"id": trip_id}
 
 
 @app.delete("/trips/{trip_id}")
-def delete_trip(trip_id: str) -> dict[str, str]:
-    """Delete a trip."""
+def delete_trip(trip_id: str, user: dict = Depends(current_user)) -> dict[str, str]:
+    """Delete one of the logged-in user's trips."""
     with get_connection() as conn:
-        conn.execute("DELETE FROM trips WHERE id = ?", (trip_id,))
+        conn.execute(
+            "DELETE FROM trips WHERE id = ? AND user_id = ?", (trip_id, user["id"])
+        )
     return {"id": trip_id}
