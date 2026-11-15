@@ -27,8 +27,7 @@ app.add_middleware(
         origin.strip()
         for origin in os.getenv(
             "CORS_ORIGINS",
-            "http://localhost:5173",
-            "https://lift-off.tech",
+            "http://localhost:5173,https://lift-off.tech",
         ).split(",")
         if origin.strip()
     ],
