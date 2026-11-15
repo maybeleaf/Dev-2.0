@@ -52,6 +52,7 @@ The website uses two backend links:
 Good to know:
 
 - Real weather needs a Geoapify key. Make a `.env` file containing `GEOAPIFY_API_KEY=your_key_here`.
+- In deployment, set `CORS_ORIGINS` to a comma-separated list of allowed site origins, such as `https://your-site.example`.
 - The website reads these weather fields: `temperature_2m_max`, `temperature_2m_min`, `precipitation_sum`, `sunshine_duration`. **Tell the frontend team before renaming them.**
 - All the fake data (flights, stays, places, prices) lives in `frontend/src/data/` and `frontend/src/engine/`. Those are the places to plug in real APIs later.
 
