@@ -3,6 +3,7 @@ import { AccessibilityPanel } from './components/AccessibilityPanel.jsx'
 import { Footer, Header, TabBar } from './components/Shell.jsx'
 import { ClockBadge } from './components/TimeMachine.jsx'
 import { Toaster } from './components/Toaster.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
 import { ClockProvider } from './context/ClockContext.jsx'
 import { SettingsProvider } from './context/SettingsContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
@@ -13,6 +14,7 @@ import { DestinationPage } from './pages/DestinationPage.jsx'
 import { ExplorePage } from './pages/ExplorePage.jsx'
 import { HomePage } from './pages/HomePage.jsx'
 import { LivePage } from './pages/LivePage.jsx'
+import { LoginPage } from './pages/LoginPage.jsx'
 import { NotFoundPage } from './pages/NotFoundPage.jsx'
 import { TripPage } from './pages/TripPage.jsx'
 import { TripsPage } from './pages/TripsPage.jsx'
@@ -27,6 +29,7 @@ function renderRoute({ path, query }) {
   if (path === '/live') return <LivePage key="live" query={query} />
   if ((m = matchPath('/live/:id', path))) return <LivePage key={`l-${m.id}`} id={m.id} query={query} />
   if (path === '/about') return <AboutPage key="about" />
+  if (path === '/login') return <LoginPage key="login" query={query} />
   return <NotFoundPage key="404" />
 }
 
@@ -74,9 +77,11 @@ export default function App() {
     <SettingsProvider>
       <ClockProvider>
         <ToastProvider>
-          <TripsProvider>
-            <Shell />
-          </TripsProvider>
+          <AuthProvider>
+            <TripsProvider>
+              <Shell />
+            </TripsProvider>
+          </AuthProvider>
         </ToastProvider>
       </ClockProvider>
     </SettingsProvider>

@@ -36,9 +36,14 @@ const env = import.meta.env || {}
 // logged in. Otherwise trips stay in localStorage only.
 export const cloudEnabled = env.VITE_TRIPS_SYNC === 'true'
 
-const AUTH_KEY = 'liftoff:auth:v1'
+export const AUTH_KEY = 'liftoff:auth:v1'
 
 const readAuth = () => readJSON(AUTH_KEY, null)
+
+// Lets the UI (AuthContext) know when the user logs in or out, including
+// when the backend rejects an old token.
+export const AUTH_EVENT = 'liftoff:auth'
+const authChanged = () => window.dispatchEvent(new Event(AUTH_EVENT))
 export const getToken = () => readAuth()?.token || null
 export const getUserEmail = () => readAuth()?.email || null
 export const isLoggedIn = () => Boolean(getToken())
@@ -58,7 +63,10 @@ async function request(path, options = {}, { auth = true } = {}) {
         ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
-    if (res.status === 401 && auth) window.localStorage.removeItem(AUTH_KEY)
+    if (res.status === 401 && auth) {
+      window.localStorage.removeItem(AUTH_KEY)
+      authChanged()
+    }
     if (!res.ok) {
       let detail = `HTTP ${res.status}`
       try {
@@ -77,6 +85,7 @@ async function request(path, options = {}, { auth = true } = {}) {
 async function authenticate(path, email, password) {
   const json = await request(path, { method: 'POST', body: JSON.stringify({ email, password }) }, { auth: false })
   writeJSON(AUTH_KEY, { token: json.token, email: json.email })
+  authChanged()
   return json.email
 }
 
@@ -90,6 +99,7 @@ export async function logout() {
     // logging out locally is enough if the backend can't be reached
   }
   window.localStorage.removeItem(AUTH_KEY)
+  authChanged()
 }
 
 export async function cloudSaveTrip(trip) {
