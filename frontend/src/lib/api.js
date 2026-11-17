@@ -6,7 +6,35 @@ import { lastYear } from './time.js'
 // Everything degrades to mock data, so the UI never waits on the backend.
 export const API_BASE = (import.meta.env?.VITE_API_BASE || '/api').replace(/\/$/, '')
 
+// Weather and geocoding are called straight from the browser, so the deployed
+// site works without the backend. Open-Meteo needs no key. The Geoapify key is
+// public once built: restrict it to your site's domain in the Geoapify dashboard.
+const OPEN_METEO_URL = 'https://archive-api.open-meteo.com/v1/archive'
+const GEOAPIFY_URL = 'https://api.geoapify.com/v1/geocode/search'
+const GEOAPIFY_KEY = import.meta.env?.VITE_GEOAPIFY_API_KEY || ''
+
 const weatherCache = new Map()
+
+async function fetchJson(url, timeoutMs) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return await res.json()
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/** Look up a place with Geoapify. Returns {name, lat, lon} or null. */
+export async function geocode(text) {
+  if (!GEOAPIFY_KEY || !text?.trim()) return null
+  const qs = new URLSearchParams({ text, format: 'json', limit: '1', apiKey: GEOAPIFY_KEY })
+  const json = await fetchJson(`${GEOAPIFY_URL}?${qs}`, 5000)
+  const r = json?.results?.[0]
+  return r ? { name: r.name || r.formatted || text, lat: r.lat, lon: r.lon } : null
+}
 
 async function getJson(path, timeoutMs) {
   const ctrl = new AbortController()
@@ -33,7 +61,7 @@ export async function checkBackend() {
 
 /**
  * Weather for the trip dates. Uses last year's real observations for the same
- * dates (via the backend's /weather → Open-Meteo archive), else climate normals.
+ * dates (Open-Meteo archive, called directly), else climate normals.
  */
 export function fetchTripWeather(dest, dates) {
   if (!dates.length) return Promise.resolve({ source: 'typical', days: [] })
@@ -43,12 +71,15 @@ export function fetchTripWeather(dest, dates) {
   const promise = (async () => {
     try {
       const qs = new URLSearchParams({
-        location: `${dest.name}, ${dest.country}`,
+        latitude: String(dest.coords[0]),
+        longitude: String(dest.coords[1]),
         start_date: lastYear(dates[0]),
         end_date: lastYear(dates[dates.length - 1]),
+        daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum,sunshine_duration',
+        timezone: 'auto',
       })
-      const json = await getJson(`/weather?${qs}`, 5000)
-      const daily = json?.weather?.daily
+      const json = await fetchJson(`${OPEN_METEO_URL}?${qs}`, 5000)
+      const daily = json?.daily
       if (!daily?.time?.length) throw new Error('No daily data')
       const days = dates.map((d) => {
         const i = daily.time.indexOf(lastYear(d))

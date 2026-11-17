@@ -14,6 +14,10 @@ GEOAPIFY_URL = "https://api.geoapify.com/v1/geocode/search"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 
+class ConfigurationError(RuntimeError):
+    """Raised when a required backend configuration value is missing."""
+
+
 
 def get_coordinates(
     location: str,
@@ -36,7 +40,7 @@ def get_coordinates(
 
     api_key = os.getenv("GEOAPIFY_API_KEY")
     if not api_key:
-        raise RuntimeError(
+        raise ConfigurationError(
             "GEOAPIFY_API_KEY is missing. Add it to your .env file."
         )
 

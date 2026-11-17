@@ -1,7 +1,7 @@
-// Saved trips live in localStorage. If Appwrite env vars are set (see
-// frontend/.env.example) trips also sync to an Appwrite table — the SDK is
-// only downloaded in that case.
+// Saved trips live in localStorage. If VITE_TRIPS_SYNC=true (see
+// frontend/.env.example) trips also sync to the backend's /trips routes.
 
+import { API_BASE } from './api.js'
 const TRIPS_KEY = 'liftoff:trips:v1'
 
 export function readJSON(key, fallback) {
@@ -30,68 +30,43 @@ export const loadLocalTrips = () => {
 export const saveLocalTrips = (trips) => writeJSON(TRIPS_KEY, trips)
 
 const env = import.meta.env || {}
-const cfg = {
-  endpoint: env.VITE_APPWRITE_ENDPOINT,
-  project: env.VITE_APPWRITE_PROJECT_ID,
-  database: env.VITE_APPWRITE_DATABASE_ID,
-  table: env.VITE_APPWRITE_TABLE_ID,
-}
-export const cloudEnabled = Boolean(cfg.endpoint && cfg.project && cfg.database && cfg.table)
 
-let sdkPromise = null
-function cloud() {
-  if (!sdkPromise) {
-    sdkPromise = (async () => {
-      const { Client, Account, TablesDB, Query } = await import('appwrite')
-      const client = new Client().setEndpoint(cfg.endpoint).setProject(cfg.project)
-      const account = new Account(client)
-      try {
-        await account.get()
-      } catch {
-        await account.createAnonymousSession()
-      }
-      return { db: new TablesDB(client), Query }
-    })().catch((error) => {
-      sdkPromise = null
-      throw error
+// Trips also sync to the team's FastAPI backend (/trips in backend/main.py)
+// when VITE_TRIPS_SYNC=true (see frontend/.env.example). Otherwise trips
+// stay in localStorage only.
+export const cloudEnabled = env.VITE_TRIPS_SYNC === 'true'
+
+async function tripsRequest(path, options = {}) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 5000)
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      signal: ctrl.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      },
     })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    return await res.json()
+  } finally {
+    clearTimeout(timer)
   }
-  return sdkPromise
 }
-
-const rowId = (id) => id.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 36)
 
 export async function cloudSaveTrip(trip) {
-  const { db } = await cloud()
-  await db.upsertRow({
-    databaseId: cfg.database,
-    tableId: cfg.table,
-    rowId: rowId(trip.id),
-    data: {
-      title: trip.title,
-      destinationId: trip.destinationId,
-      startDate: trip.params.startDate,
-      endDate: trip.params.endDate,
-      data: JSON.stringify(trip),
-    },
+  await tripsRequest(`/trips/${encodeURIComponent(trip.id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(trip),
   })
 }
 
 export async function cloudListTrips() {
-  const { db, Query } = await cloud()
-  const res = await db.listRows({ databaseId: cfg.database, tableId: cfg.table, queries: [Query.orderDesc('$updatedAt'), Query.limit(50)] })
-  return res.rows
-    .map((r) => {
-      try {
-        return JSON.parse(r.data)
-      } catch {
-        return null
-      }
-    })
-    .filter(Boolean)
+  const trips = await tripsRequest('/trips')
+  return Array.isArray(trips) ? trips : []
 }
 
 export async function cloudDeleteTrip(id) {
-  const { db } = await cloud()
-  await db.deleteRow({ databaseId: cfg.database, tableId: cfg.table, rowId: rowId(id) })
+  await tripsRequest(`/trips/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
