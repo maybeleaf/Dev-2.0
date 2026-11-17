@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Copy, MoreHorizontal, Plus, Radio, Search, Share2, Trash2 } from 'lucide-react'
+import { Copy, LogIn, MoreHorizontal, Plus, Radio, Search, Share2, Trash2, UserPlus } from 'lucide-react'
 import { Menu } from '../components/Menu.jsx'
 import { Poster } from '../components/Poster.jsx'
 import { Emoji } from '../components/ui.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useNow } from '../context/ClockContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useTrips } from '../context/TripsContext.jsx'
@@ -31,7 +32,40 @@ const FILTERS = [
   { key: 'past', label: 'Past' },
 ]
 
+/** My trips needs an account. Shown instead of the list while logged out. */
+function LoginGate() {
+  usePageTitle('My trips')
+  return (
+    <div className="container page auth-gate">
+      <div className="empty">
+        <span className="empty-emoji emoji" aria-hidden="true">
+          🎫
+        </span>
+        <h1>Log in to see your trips</h1>
+        <p>Your saved trips are tied to your account, so you can open them on any device.</p>
+        <div className="row" style={{ justifyContent: 'center' }}>
+          <a className="btn btn-primary" href={href('/login', { next: '/trips' })}>
+            <LogIn aria-hidden="true" /> Log in
+          </a>
+          <a className="btn btn-secondary" href={href('/login', { mode: 'signup', next: '/trips' })}>
+            <UserPlus aria-hidden="true" /> Create an account
+          </a>
+        </div>
+        <p className="small muted">
+          Just looking? You can still <a href="#/">plan a trip</a> without an account.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TripsPage() {
+  const { loggedIn } = useAuth()
+  if (!loggedIn) return <LoginGate />
+  return <TripsList />
+}
+
+function TripsList() {
   usePageTitle('My trips')
   const { trips, addTrip, deleteTrip } = useTrips()
   const { push } = useToast()
