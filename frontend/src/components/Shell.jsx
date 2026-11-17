@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Compass, Luggage, Moon, Radio, Sparkles, Sun, Info } from 'lucide-react'
+import { Compass, Luggage, Moon, Radio, Sparkles, Sun, Info, LogIn, LogOut, UserRound } from 'lucide-react'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useNow } from '../context/ClockContext.jsx'
 import { useSettings } from '../context/SettingsContext.jsx'
+import { useToast } from '../context/ToastContext.jsx'
 import { useTrips } from '../context/TripsContext.jsx'
 import { checkBackend } from '../lib/api.js'
-import { href } from '../lib/router.js'
+import { href, navigate } from '../lib/router.js'
 import { cloudEnabled } from '../lib/storage.js'
 import { Logo } from './Logo.jsx'
+import { Menu } from './Menu.jsx'
+import '../styles/auth.css'
 
 const NAV = [
   { path: '/', label: 'Plan', icon: Sparkles, match: (p) => p === '/' || p === '/plan' },
@@ -28,9 +32,47 @@ function useLiveTrip() {
   })
 }
 
+/** Header button: "Log in" when logged out, otherwise a menu with the email and Log out. */
+function AccountButton({ path }) {
+  const { loggedIn, email, logout } = useAuth()
+  const { push } = useToast()
+  if (!loggedIn) {
+    if (path === '/login') return null
+    return (
+      <a className="btn btn-secondary account-btn" href={href('/login', path === '/' ? undefined : { next: path })} aria-label="Log in">
+        <LogIn aria-hidden="true" />
+        <span>Log in</span>
+      </a>
+    )
+  }
+  return (
+    <Menu
+      label={`Account: ${email}`}
+      icon={UserRound}
+      buttonLabel={email}
+      buttonClassName="btn btn-secondary account-btn"
+      items={[
+        { heading: `Signed in as ${email}` },
+        { key: 'trips', label: 'My trips', icon: Luggage, onSelect: () => navigate('/trips') },
+        { separator: true },
+        {
+          key: 'logout',
+          label: 'Log out',
+          icon: LogOut,
+          onSelect: async () => {
+            await logout()
+            push({ title: 'Logged out', body: 'See you on the next trip.', emoji: '👋', tone: 'info' })
+          },
+        },
+      ]}
+    />
+  )
+}
+
 export function Header({ path, onOpenA11y }) {
   const { resolvedTheme, update } = useSettings()
   const { trips } = useTrips()
+  const { loggedIn } = useAuth()
   const live = useLiveTrip()
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
@@ -52,7 +94,7 @@ export function Header({ path, onOpenA11y }) {
             <a key={p} href={href(p)} className="nav-link" aria-current={match(path) ? 'page' : undefined}>
               <Icon aria-hidden="true" />
               <span>{label}</span>
-              {p === '/trips' && trips.length > 0 && <span className="nav-count">{trips.length}</span>}
+              {p === '/trips' && loggedIn && trips.length > 0 && <span className="nav-count">{trips.length}</span>}
               {p === '/live' && live && <span className="live-dot" aria-label="A trip is live" />}
             </a>
           ))}
@@ -67,6 +109,7 @@ export function Header({ path, onOpenA11y }) {
             </span>
             <span className="a11y-btn-label">Accessibility</span>
           </button>
+          <AccountButton path={path} />
         </div>
       </div>
     </header>
@@ -129,7 +172,7 @@ export function Footer() {
           </p>
           <p className="small status-line">
             <span className={`status-dot ${cloudEnabled ? 'up' : 'local'}`} aria-hidden="true" />
-            {cloudEnabled ? 'Trips sync to Appwrite' : 'Trips saved on this device'}
+            {cloudEnabled ? 'Trips sync to your account when you’re logged in' : 'Trips saved on this device'}
           </p>
         </div>
       </div>
