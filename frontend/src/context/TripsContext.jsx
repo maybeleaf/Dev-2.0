@@ -1,11 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { cloudDeleteTrip, cloudEnabled, cloudListTrips, cloudSaveTrip, loadLocalTrips, saveLocalTrips } from '../lib/storage.js'
+import { cloudDeleteTrip, cloudEnabled, cloudListTrips, cloudSaveTrip, loadLocalTrips, pushLocalTrips, saveLocalTrips } from '../lib/storage.js'
+import { useAuth } from './AuthContext.jsx'
 
 const TripsContext = createContext(null)
 
 export function TripsProvider({ children }) {
   const [trips, setTrips] = useState(loadLocalTrips)
   const dirty = useRef(new Set())
+  const { loggedIn } = useAuth()
+  const syncing = cloudEnabled && loggedIn
 
   useEffect(() => {
     saveLocalTrips(trips)
@@ -20,10 +23,14 @@ export function TripsProvider({ children }) {
     return () => window.removeEventListener('storage', onStorage)
   }, [])
 
-  // Optional Appwrite sync: pull once, push changed trips (debounced).
+  // Optional backend sync (VITE_TRIPS_SYNC=true) while logged in: on login,
+  // upload this device's trips, then pull the account's trips and merge.
+  // After that, push changed trips (debounced).
   useEffect(() => {
-    if (!cloudEnabled) return
-    cloudListTrips()
+    if (!syncing) return
+    pushLocalTrips()
+      .catch((e) => console.warn('[Lift Off] Could not upload this device’s trips.', e))
+      .then(cloudListTrips)
       .then((remote) =>
         setTrips((local) => {
           const byId = new Map(local.map((t) => [t.id, t]))
@@ -31,19 +38,19 @@ export function TripsProvider({ children }) {
           return [...byId.values()].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
         }),
       )
-      .catch((e) => console.warn('[Lift Off] Appwrite sync unavailable — using this device only.', e))
-  }, [])
+      .catch((e) => console.warn('[Lift Off] Trip sync unavailable — using this device only.', e))
+  }, [syncing])
   useEffect(() => {
-    if (!cloudEnabled || !dirty.current.size) return undefined
+    if (!syncing || !dirty.current.size) return undefined
     const timer = setTimeout(() => {
       for (const id of dirty.current) {
         const t = trips.find((x) => x.id === id)
-        if (t) cloudSaveTrip(t).catch((e) => console.warn('[Lift Off] Appwrite save failed', e))
+        if (t) cloudSaveTrip(t).catch((e) => console.warn('[Lift Off] Trip sync save failed', e))
       }
       dirty.current.clear()
     }, 1200)
     return () => clearTimeout(timer)
-  }, [trips])
+  }, [trips, syncing])
 
   const addTrip = useCallback((trip) => {
     dirty.current.add(trip.id)
@@ -57,8 +64,8 @@ export function TripsProvider({ children }) {
 
   const deleteTrip = useCallback((id) => {
     setTrips((ts) => ts.filter((t) => t.id !== id))
-    if (cloudEnabled) cloudDeleteTrip(id).catch(() => {})
-  }, [])
+    if (syncing) cloudDeleteTrip(id).catch(() => {})
+  }, [syncing])
 
   const value = useMemo(() => ({ trips, addTrip, updateTrip, deleteTrip, getTrip: (id) => trips.find((t) => t.id === id) }), [trips, addTrip, updateTrip, deleteTrip])
   return <TripsContext.Provider value={value}>{children}</TripsContext.Provider>
