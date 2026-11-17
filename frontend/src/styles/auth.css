@@ -1,0 +1,228 @@
+/* ——— Log in / Sign up ——— */
+.auth-page {
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  width: min(100%, 920px);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Left: decorative boarding pass */
+.auth-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  background:
+    var(--grain),
+    linear-gradient(160deg, var(--accent) 0%, var(--accent-hover) 100%);
+  background-blend-mode: soft-light, normal;
+  color: var(--on-accent);
+}
+
+.auth-aside .logo-word,
+.auth-aside .logo-word em {
+  color: var(--on-accent);
+}
+
+.auth-aside .logo-mark {
+  border-radius: 11px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--on-accent) 45%, transparent);
+}
+
+.auth-ticket {
+  position: relative;
+  margin-top: auto;
+  padding: 1.25rem 1.35rem;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--shadow-md);
+  transform: rotate(-2deg);
+}
+
+/* punched holes on each side of the ticket */
+.auth-ticket::before,
+.auth-ticket::after {
+  content: '';
+  position: absolute;
+  top: 58%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-hover);
+}
+
+.auth-ticket::before { left: -9px; }
+.auth-ticket::after { right: -9px; }
+
+.auth-ticket-label {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-ticket-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block: 0.35rem 0.9rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.auth-ticket-plane {
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+.auth-ticket-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.85rem;
+  border-top: 2px dashed var(--line-strong);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.auth-ticket-row small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.auth-aside-note {
+  font-size: 0.92rem;
+  opacity: 0.92;
+}
+
+/* Right: the form */
+.auth-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  background: var(--card);
+}
+
+.auth-tabs .tab {
+  flex: 1;
+  justify-content: center;
+}
+
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.auth-title {
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+
+.auth-form {
+  --stack-gap: 1.1rem;
+}
+
+.auth-password {
+  position: relative;
+}
+
+.auth-password .input {
+  padding-right: 3.25rem;
+}
+
+.auth-reveal {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  transform: translateY(-50%);
+}
+
+.auth-switch {
+  text-align: center;
+}
+
+.callout[tabindex='-1']:focus {
+  outline: none;
+}
+
+/* Gate on My trips when logged out */
+.auth-gate .empty {
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+/* Header account button */
+.account-btn {
+  max-width: 14rem;
+}
+
+.account-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-aside {
+    gap: 1rem;
+  }
+
+  .auth-ticket,
+  .auth-aside-note {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  /* icon only on small screens; the email stays readable to screen readers */
+  .account-btn span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .account-btn {
+    width: 44px;
+    padding: 0;
+  }
+}
+
+:root[data-theme='contrast'] .auth-aside {
+  background: #000;
+  border-right: 1px solid var(--line);
+}
+
+:root[data-theme='contrast'] .auth-ticket::before,
+:root[data-theme='contrast'] .auth-ticket::after {
+  background: #000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-ticket {
+    transform: none;
+  }
+}
