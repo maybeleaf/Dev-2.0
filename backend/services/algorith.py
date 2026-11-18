@@ -25,7 +25,7 @@ DESIGN DECISIONS (made by Christian, Nov 2026)
 6. Restaurants use the same scoring approach as activities, different weights.
 7. Output: top_n (default 10). Frontend shows ~5 with "show more".
 
-IDEA — NOT YET DISCUSSED WITH THE TEAM (Christian's proposal)
+IDEA — proposal to discuss at the team meeting (Christian)
 Before searching, let the user describe their trip in plain language
 ("honeymoon in Paris", "Japan trip mainly for climbing"). An AI turns that
 into a weights dict (e.g. honeymoon => rating matters more than price;
@@ -214,9 +214,14 @@ def interest_match(item: dict, interests: list[str]) -> float:
     V1: simple keyword check on category/name/cuisine.
     TODO: implement. Later could be AI-based.
     """
-    return 0.0
 
+    if not interests:
+        return 0.0
+    text = " ".join(str(item.get(f)) for f in ("name", "category", "cuisine", "description") if item.get(f)).lower()
+    hits = sum(1 for i in interests if i.lower().strip() in text)
+    return 1.0 if hits > 0 else 0.0
 
+    
 def score_activities(activities: list[dict], weights: dict[str, float], interests: list[str]) -> list[float]:
     """Factors: price, rating, interest match. TODO: implement"""
     return [0.0] * len(activities)
