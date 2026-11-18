@@ -1,0 +1,236 @@
+/* ————————————————————————————————————————————————
+   Lift Off design tokens
+   Warm paper + deep ink + terracotta (from the original landing page),
+   with dark, high-contrast and colour-vision-safe variants.
+   Every text/background pair below meets WCAG AA.
+   ———————————————————————————————————————————————— */
+
+:root {
+  --font-display: 'Fraunces Variable', 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans Variable', 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --text-scale: 1;
+  --line-height: 1.55;
+  --letter-spacing: 0;
+  --word-spacing: normal;
+
+  /* surfaces & text — light */
+  --paper: #f7f3ea;
+  --paper-2: #efe8d9;
+  --paper-3: #e6ddca;
+  --card: #fffdf8;
+  --card-2: #fbf7ee;
+  --ink: #17211b;
+  --ink-2: #39463e;
+  --muted: #5d6960;
+  --line: #e0d8c7;
+  --line-strong: #c7bda7;
+  --overlay: rgb(23 33 27 / 0.42);
+
+  --accent: #c4502e;
+  --accent-hover: #a9411f;
+  --accent-bright: #d95d39;
+  --accent-ink: #a8401f;
+  --accent-soft: #f9e0d3;
+  --on-accent: #ffffff;
+
+  --sky: #2f5d8a;
+  --sky-soft: #dfe9f3;
+  --success: #2c7a4b;
+  --success-soft: #dcefe2;
+  --warning: #8f5600;
+  --warning-soft: #fbecc8;
+  --danger: #b3261e;
+  --danger-soft: #f9dedc;
+  --focus: #1a5fd0;
+
+  --shadow-sm: 0 1px 2px rgb(23 33 27 / 0.06), 0 1px 1px rgb(23 33 27 / 0.04);
+  --shadow-md: 0 10px 24px -12px rgb(23 33 27 / 0.22), 0 2px 6px rgb(23 33 27 / 0.06);
+  --shadow-lg: 0 30px 60px -24px rgb(23 33 27 / 0.35), 0 8px 20px -10px rgb(23 33 27 / 0.12);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+  --radius-pill: 999px;
+
+  --gutter: clamp(16px, 4vw, 36px);
+  --header-h: 68px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* category colours (vivid) */
+  --cat-sightseeing: #d0532f;
+  --cat-culture: #8a55ad;
+  --cat-food: #c5850c;
+  --cat-shopping: #c23d78;
+  --cat-nature: #2c8a57;
+  --cat-nightlife: #4a3cb0;
+  --cat-relax: #1b8a9a;
+  --cat-flight: #2f5d8a;
+  --cat-transport: #5b6b78;
+  --cat-stay: #2b6f4e;
+
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ——— Dark ——— */
+:root[data-theme='dark'] {
+  --paper: #101613;
+  --paper-2: #0b100d;
+  --paper-3: #1d2621;
+  --card: #18201c;
+  --card-2: #1d2722;
+  --ink: #f1ede4;
+  --ink-2: #d2d8d1;
+  --muted: #a3ada6;
+  --line: #2b3630;
+  --line-strong: #3d4a43;
+  --overlay: rgb(0 0 0 / 0.6);
+
+  --accent: #f28c62;
+  --accent-hover: #ffa47f;
+  --accent-bright: #ff9a6e;
+  --accent-ink: #ffa07a;
+  --accent-soft: #3a2219;
+  --on-accent: #1d0c05;
+
+  --sky: #8cb8e8;
+  --sky-soft: #1b2a3a;
+  --success: #7fd3a0;
+  --success-soft: #16301f;
+  --warning: #f5c46b;
+  --warning-soft: #33270f;
+  --danger: #ff8d85;
+  --danger-soft: #3b1714;
+  --focus: #7cb1ff;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 12px 28px -12px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 30px 60px -20px rgb(0 0 0 / 0.75);
+
+  --cat-sightseeing: #ff8a63;
+  --cat-culture: #c79bea;
+  --cat-food: #f2bd4c;
+  --cat-shopping: #f07cb0;
+  --cat-nature: #6fd39a;
+  --cat-nightlife: #9d92ff;
+  --cat-relax: #5fd0df;
+  --cat-flight: #8cb8e8;
+  --cat-transport: #a6b4c0;
+  --cat-stay: #7fc8a0;
+}
+
+/* ——— High contrast ——— */
+:root[data-theme='contrast'] {
+  --paper: #000000;
+  --paper-2: #000000;
+  --paper-3: #141414;
+  --card: #000000;
+  --card-2: #0d0d0d;
+  --ink: #ffffff;
+  --ink-2: #ffffff;
+  --muted: #ececec;
+  --line: #ffffff;
+  --line-strong: #ffffff;
+  --overlay: rgb(0 0 0 / 0.85);
+
+  --accent: #ffd400;
+  --accent-hover: #ffe24d;
+  --accent-bright: #ffd400;
+  --accent-ink: #ffd400;
+  --accent-soft: #1f1a00;
+  --on-accent: #000000;
+
+  --sky: #6ee7ff;
+  --sky-soft: #001a22;
+  --success: #6dff9c;
+  --success-soft: #001f0c;
+  --warning: #ffd400;
+  --warning-soft: #1f1a00;
+  --danger: #ff6b6b;
+  --danger-soft: #260000;
+  --focus: #00e5ff;
+
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+
+  --cat-sightseeing: #ff9e66;
+  --cat-culture: #e0a8ff;
+  --cat-food: #ffd400;
+  --cat-shopping: #ff8ac4;
+  --cat-nature: #6dff9c;
+  --cat-nightlife: #a8a0ff;
+  --cat-relax: #6ee7ff;
+  --cat-flight: #6ee7ff;
+  --cat-transport: #ffffff;
+  --cat-stay: #6dff9c;
+}
+
+/* ——— Colour-vision-safe palette (Okabe–Ito) ——— */
+:root[data-palette='cb'] {
+  --cat-sightseeing: #d55e00;
+  --cat-culture: #cc79a7;
+  --cat-food: #e69f00;
+  --cat-shopping: #b8a800;
+  --cat-nature: #009e73;
+  --cat-nightlife: #0072b2;
+  --cat-relax: #56b4e9;
+  --cat-flight: #0072b2;
+  --cat-transport: #6b6b6b;
+  --cat-stay: #009e73;
+  --accent: #d55e00;
+  --accent-hover: #b34f00;
+  --accent-ink: #a34500;
+  --success: #007a59;
+  --danger: #a33a00;
+}
+:root[data-palette='cb'][data-theme='dark'],
+:root[data-palette='cb'][data-theme='contrast'] {
+  --cat-shopping: #f0e442;
+  --cat-nightlife: #56b4e9;
+  --cat-relax: #8fd3f7;
+  --cat-flight: #56b4e9;
+  --cat-transport: #bdbdbd;
+  --accent: #e69f00;
+  --accent-hover: #ffb733;
+  --accent-ink: #f0b23a;
+  --on-accent: #000000;
+  --success: #3ccf9f;
+  --danger: #ff9a4d;
+}
+
+/* ——— Monochrome: rely on icons + labels only ——— */
+:root[data-palette='mono'] {
+  --cat-sightseeing: var(--ink-2);
+  --cat-culture: var(--ink-2);
+  --cat-food: var(--ink-2);
+  --cat-shopping: var(--ink-2);
+  --cat-nature: var(--ink-2);
+  --cat-nightlife: var(--ink-2);
+  --cat-relax: var(--ink-2);
+  --cat-flight: var(--ink-2);
+  --cat-transport: var(--muted);
+  --cat-stay: var(--ink-2);
+}
+
+/* ——— Reading preferences ——— */
+:root[data-spacing='relaxed'] { --line-height: 1.8; }
+:root[data-spacing='loose'] { --line-height: 2.05; }
+:root[data-letters='wide'] { --letter-spacing: 0.035em; --word-spacing: 0.14em; }
+
+:root[data-font='hyperlegible'] {
+  --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
+  --font-display: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+:root[data-font='dyslexic'] {
+  --font-body: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+  --font-display: 'OpenDyslexic', 'Comic Sans MS', system-ui, sans-serif;
+}
+:root[data-font='system'] {
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
