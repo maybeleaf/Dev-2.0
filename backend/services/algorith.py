@@ -24,6 +24,10 @@ DESIGN DECISIONS (made by Christian, Nov 2026)
    to the user's destination by the API layer.
 6. Restaurants use the same scoring approach as activities, different weights.
 7. Output: top_n (default 10). Frontend shows ~5 with "show more".
+8. Price score (stays) compares price to the user's nightly budget:
+   1 - price / budget, floored at PRICE_FLOOR for over-budget stays.
+9. AI weights (approved by the team): any weights from the AI pass through
+   clean_weights() first. Clicking a preset after the AI averages the two.
 
 IDEA — proposal to discuss at the team meeting (Christian)
 Before searching, let the user describe their trip in plain language
@@ -54,7 +58,7 @@ BUDGET_SPLIT = {
 }
 
 # Preset weight modes. Each category's weights should sum to 1.0.
-# TODO: an AI step will later generate a dict in this same shape.
+# The AI step generates a dict in this same shape; clean_weights() checks it.
 PRESETS = {
     "cheapest": {
         "stays":       {"price": 0.8, "rating": 0.2},
@@ -74,6 +78,22 @@ PRESETS = {
         "activities":  {"price": 0.1, "rating": 0.5, "interest": 0.4},
         "restaurants": {"price": 0.1, "rating": 0.6, "interest": 0.3},
     },
+}
+
+# Every weight is at least this after cleaning, so no factor is ever ignored
+# completely. Open question: 0.01 vs 0.05. Test with real data.
+MIN_WEIGHT = 0.05
+
+# Lowest price score an item can get. Over-budget stays kept by the relaxed
+# filter would otherwise score below 0. Open question: 0.05 vs 0.1.
+PRICE_FLOOR = 0.05
+
+# AI sometimes answers in words. Unknown words fall back to the preset value.
+WORD_WEIGHTS = {
+    "none": 0.0, "zero": 0.0,
+    "very low": 0.1, "low": 0.2, "little": 0.2, "minor": 0.2,
+    "medium": 0.5, "moderate": 0.5, "mid": 0.5, "average": 0.5, "some": 0.5,
+    "high": 0.8, "important": 0.8, "major": 0.8, "very high": 0.9,
 }
 
 MAX_STOPS_STRICT = 1          # 2+ stops filtered out (except "cheapest")
@@ -140,6 +160,141 @@ def finish(items: list[dict], scores: list[float], sort_by: str, top_n: int) -> 
 
 
 # ----------------------------------------------------------------------------
+# 2b. WEIGHTS — cleaning (safety net for AI output) and blending with presets
+# Rules decided by Christian (AI weights design, Nov 2026):
+#   1. Drop keys the scoring doesn't use.
+#   2. Missing key -> fill from the closest matching preset (keep AI's values).
+#   3. Negative number -> dropped, then filled like a missing key.
+#   4. Word values ("low"/"high") -> set numbers; unknown words -> filled.
+#   5. Normalize so each category adds up to 1.
+#   6. Whole category missing -> "balanced" until the user picks a preset.
+#   7. Minimum weight: nothing below MIN_WEIGHT (applied after normalizing,
+#      taking the difference from the other weights so the total stays 1).
+# ----------------------------------------------------------------------------
+
+def weight_to_number(value: Any) -> float | None:
+    """Turn one raw weight into a usable number, or None if it can't be used."""
+    if isinstance(value, bool):          # True/False are ints in Python; reject
+        return None
+    if isinstance(value, (int, float)):
+        number = float(value)
+    elif isinstance(value, str):
+        text = value.strip().lower()
+        if text in WORD_WEIGHTS:
+            number = WORD_WEIGHTS[text]
+        else:
+            try:
+                number = float(text)     # "0.4" as a string
+            except ValueError:
+                return None              # unknown word -> fill from preset
+    else:
+        return None
+    if number != number or number in (float("inf"), float("-inf")):
+        return None                      # NaN or infinity
+    if number < 0:
+        return None                      # rule 3: negatives are dropped
+    return number
+
+
+def closest_preset(known: dict[str, float], category: str) -> dict[str, float]:
+    """
+    The preset whose weights are nearest to the ones the AI gave us
+    (smallest total difference over the keys we have). Used to fill gaps.
+    """
+    if not known:
+        return PRESETS["balanced"][category]
+    total = sum(known.values())
+    # Compare on the same 0..1 scale, e.g. {"price": 3, "rating": 7} -> 0.3 / 0.7
+    scaled = {k: v / total for k, v in known.items()} if total > 1 else known
+
+    def distance(mode: str) -> float:
+        preset = PRESETS[mode][category]
+        return sum(abs(scaled[k] - preset[k]) for k in scaled)
+
+    best = min(PRESETS, key=distance)
+    return PRESETS[best][category]
+
+
+def normalize_with_minimum(weights: dict[str, float]) -> dict[str, float]:
+    """Rules 5 and 7: scale weights to add up to 1, with none below MIN_WEIGHT."""
+    total = sum(weights.values())
+    if total <= 0:
+        # All zeros: no preference given, so split evenly.
+        weights = {k: 1.0 for k in weights}
+        total = float(len(weights))
+    result = {k: v / total for k, v in weights.items()}
+
+    # Raise anything under the minimum and take the difference from the rest,
+    # in proportion to their size. Repeat in case that pushes another one under.
+    raised: set[str] = set()
+    while True:
+        below = {k for k, v in result.items() if v < MIN_WEIGHT and k not in raised}
+        if not below:
+            return result
+        raised |= below
+        free = 1.0 - MIN_WEIGHT * len(raised)
+        rest_total = sum(v for k, v in result.items() if k not in raised)
+        result = {
+            k: MIN_WEIGHT if k in raised else v / rest_total * free
+            for k, v in result.items()
+        }
+
+
+def clean_category(raw: Any, category: str) -> dict[str, float]:
+    """Apply rules 1-5 and 7 to ONE category's weights (e.g. just "stays")."""
+    allowed = PRESETS["balanced"][category].keys()
+    if not isinstance(raw, dict):
+        return dict(PRESETS["balanced"][category])       # rule 6
+
+    known: dict[str, float] = {}
+    for key in allowed:                                   # rule 1: others ignored
+        number = weight_to_number(raw.get(key))
+        if number is not None:
+            known[key] = number
+    if not known:
+        return dict(PRESETS["balanced"][category])
+
+    preset = closest_preset(known, category)              # rules 2-4
+    filled = {key: known.get(key, preset[key]) for key in allowed}
+    return normalize_with_minimum(filled)                 # rules 5 and 7
+
+
+def clean_weights(raw: Any) -> dict[str, dict[str, float]]:
+    """
+    Clean a FULL weights dict from the AI, shaped like one PRESETS entry:
+    {"stays": {...}, "flights": {...}, "activities": {...}, "restaurants": {...}}
+    Missing categories become "balanced" (see missing_categories()).
+    """
+    if not isinstance(raw, dict):
+        raw = {}
+    return {category: clean_category(raw.get(category), category)
+            for category in PRESETS["balanced"]}
+
+
+def missing_categories(raw: Any) -> list[str]:
+    """Categories the AI left out, so the frontend can ask the user to pick a preset."""
+    if not isinstance(raw, dict):
+        return list(PRESETS["balanced"])
+    return [c for c in PRESETS["balanced"] if not isinstance(raw.get(c), dict)]
+
+
+def blend_with_preset(ai_weights: Any, mode: str) -> dict[str, dict[str, float]]:
+    """
+    User clicked a preset after the AI set weights: average each weight.
+    e.g. AI stays price 0.3 + "cheapest" price 0.8 -> 0.55.
+    """
+    ai = clean_weights(ai_weights)
+    preset = PRESETS.get(mode, PRESETS["balanced"])
+    return {
+        category: normalize_with_minimum({
+            key: (ai[category][key] + preset[category][key]) / 2
+            for key in ai[category]
+        })
+        for category in ai
+    }
+
+
+# ----------------------------------------------------------------------------
 # 3. FILTERS
 # Each returns the items that survive. Called strict first, then relaxed.
 # ----------------------------------------------------------------------------
@@ -189,8 +344,19 @@ def filter_restaurants(restaurants: list[dict], budget: float, relaxed: bool = F
 # Each returns one score per item, 0..1, using the weights dict.
 # ----------------------------------------------------------------------------
 
-def score_stays(stays: list[dict], weights: dict[str, float]) -> list[float]:
-    price_scores = normalize([s["pricePerNight"] for s in stays], higher_is_better=False)
+def budget_price_score(price: float, budget: float) -> float:
+    """
+    How cheap something is compared to the user's BUDGET (not to the other
+    results, which blew tiny dollar differences up into huge score gaps).
+    Free = 1.0, half the budget = 0.5; on or over budget = PRICE_FLOOR.
+    """
+    if budget <= 0:
+        return PRICE_FLOOR
+    return min(1.0, max(PRICE_FLOOR, 1 - price / budget))
+
+
+def score_stays(stays: list[dict], weights: dict[str, float], nightly_budget: float) -> list[float]:
+    price_scores = [budget_price_score(s["pricePerNight"], nightly_budget) for s in stays]
     rating_scores = normalize([rating_or_neutral(s) for s in stays], higher_is_better=True)
     # .get() so a weights dict missing a key (e.g. AI-generated) doesn't crash.
     return [
@@ -244,10 +410,13 @@ def rank_stays(
     mode: str = "balanced",
     sort_by: str = "score",
     top_n: int = DEFAULT_TOP_N,
+    weights: dict[str, float] | None = None,
 ) -> tuple[list[dict], str | None]:
     """
     FULLY IMPLEMENTED — use as the template for the others.
     budget is the STAYS share of the budget, not the trip total.
+    weights: optional stays weights, e.g. {"price": 0.3, "rating": 0.7}
+             (from the AI). None = use the preset for `mode`, like before.
     """
     if budget <= 0:
         return [], None   # user opted out of this category
@@ -265,7 +434,13 @@ def rank_stays(
     if not kept:
         return [], "No stays found for this budget."
 
-    scores = score_stays(kept, get_weights(mode, "stays"))
+    if weights is None:
+        stay_weights = get_weights(mode, "stays")
+    else:
+        # Given weights still go through the safety net (AI can break rules).
+        stay_weights = clean_category(weights, "stays")
+
+    scores = score_stays(kept, stay_weights, nightly_budget=budget / nights)
     return finish(kept, scores, sort_by, top_n), warning
 
 
