@@ -2056,3 +2056,50 @@
     margin-left: 0;
   }
 }
+
+/* ---- Stays ranker (POST /stays/rank) ---- */
+.stay-rating-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stays-rank {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card-2);
+}
+
+.stays-rank-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.stays-rank-status {
+  margin: 0;
+}
+
+.stays-rank-warning {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.stays-over {
+  margin-top: 1.75rem;
+}
+
+.stays-over > .eyebrow {
+  margin-bottom: 0.6rem;
+}
