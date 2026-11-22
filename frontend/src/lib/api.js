@@ -50,6 +50,57 @@ async function getJson(path, timeoutMs) {
   }
 }
 
+async function postJson(path, body, timeoutMs) {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      signal: ctrl.signal,
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const type = res.headers.get('content-type') || ''
+    if (!type.includes('json')) throw new Error('Not JSON')
+    return await res.json()
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * Ask the backend ranker (POST /stays/rank, Christian's PR) to order stays.
+ * Only the fields the ranker reads are sent; results are matched back by id.
+ *
+ * budget is the STAYS budget for the whole trip (not the trip total).
+ * mode: 'cheapest' | 'balanced' | 'nicest'. weights (optional) overrides mode.
+ *
+ * Resolves to { ranked: [{ id, score }], warning, weights } or throws if the
+ * backend is down / the route isn't deployed yet, so callers can fall back.
+ */
+export async function rankStays({ stays, budget, nights, mode = 'balanced', weights, topN = 100 }) {
+  const json = await postJson(
+    '/stays/rank',
+    {
+      stays: stays.map((s) => ({ id: s.id, name: s.title, pricePerNight: s.pricePerNight, rating: s.rating })),
+      budget,
+      nights,
+      mode,
+      ...(weights ? { weights } : {}),
+      sort_by: 'score',
+      top_n: Math.min(100, Math.max(1, topN)),
+    },
+    4000,
+  )
+  if (!Array.isArray(json?.results)) throw new Error('Bad ranker response')
+  return {
+    ranked: json.results.map((r) => ({ id: r.id, score: Number(r.score) || 0 })),
+    warning: json.warning || null,
+    weights: json.weights || null,
+  }
+}
+
 export async function checkBackend() {
   try {
     const json = await getJson('/health', 2500)
