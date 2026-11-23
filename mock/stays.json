@@ -1,0 +1,6 @@
+[
+  {"name": "Hotel Sol", "pricePerNight": 120, "rating": 4.5},
+  {"name": "Cozy Loft", "pricePerNight": 80, "rating": 4.1},
+  {"name": "Grand Palace", "pricePerNight": 300, "rating": 4.9}
+]
+
