@@ -142,6 +142,8 @@ def save_trip(
             (trip_id, json.dumps(trip), user["id"]),
         )
     return {"id": trip_id}
+
+    
 @app.delete("/trips/{trip_id}")
 def delete_trip(trip_id: str, user: dict = Depends(current_user)) -> dict[str, str]:
     """Delete one of the logged-in user's trips."""
