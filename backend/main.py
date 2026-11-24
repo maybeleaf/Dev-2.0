@@ -127,19 +127,23 @@ def save_trip(
 ) -> dict[str, str]:
     """Create or update one of the logged-in user's trips."""
     with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT user_id FROM trips WHERE id = ?", (trip_id,)
+        ).fetchone()
+        if existing is not None and existing["user_id"] != user["id"]:
+            raise HTTPException(status_code=409, detail="That trip id is already taken.")
         conn.execute(
             """
             INSERT INTO trips (id, data, user_id) VALUES (?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 data = excluded.data,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE trips.user_id = excluded.user_id
             """,
             (trip_id, json.dumps(trip), user["id"]),
         )
     return {"id": trip_id}
 
-
+    
 @app.delete("/trips/{trip_id}")
 def delete_trip(trip_id: str, user: dict = Depends(current_user)) -> dict[str, str]:
     """Delete one of the logged-in user's trips."""

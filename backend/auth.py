@@ -29,6 +29,7 @@ def verify_password(password: str, stored: str) -> bool:
 
 
 def new_session(conn, user_id: int) -> str:
+    conn.execute("DELETE FROM sessions WHERE created_at <= datetime('now', '-30 days')")
     token = secrets.token_urlsafe(32)
     conn.execute(
         "INSERT INTO sessions (token, user_id) VALUES (?, ?)", (token, user_id)
@@ -47,6 +48,7 @@ def current_user(authorization: str | None = Header(default=None)) -> dict:
             SELECT users.id, users.email FROM sessions
             JOIN users ON users.id = sessions.user_id
             WHERE sessions.token = ?
+              AND sessions.created_at > datetime('now', '-30 days')
             """,
             (token,),
         ).fetchone()
