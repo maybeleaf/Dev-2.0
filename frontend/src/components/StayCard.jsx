@@ -82,7 +82,7 @@ export const StayArt = memo(function StayArt({ stay, dest }) {
 })
 
 
-export function StayCard({ stay, dest, fmt, nights, travelers, selected, onSelect, headingLevel = 3 }) {
+export function StayCard({ stay, dest, fmt, nights, travelers, selected, onSelect, headingLevel = 3, match }) {
   const H = `h${headingLevel}`
   const total = stayTotal(stay, nights)
   const tooSmall = stay.capacity < travelers
@@ -105,7 +105,14 @@ export function StayCard({ stay, dest, fmt, nights, travelers, selected, onSelec
         <p className="stay-sub muted small">
           <Users aria-hidden="true" className="icon-inline" /> Up to {stay.capacity} · {stay.bedrooms} bedroom{stay.bedrooms === 1 ? '' : 's'} · {stay.distanceKm} km to centre · Host {stay.host}
         </p>
-        <Rating value={stay.rating} reviews={stay.reviews} />
+        <div className="stay-rating-row">
+          <Rating value={stay.rating} reviews={stay.reviews} />
+          {match != null && (
+            <span className="badge badge-sky stay-match" title="Score from the Lift Off stays ranker (price vs rating)">
+              {Math.round(match * 100)}% match
+            </span>
+          )}
+        </div>
         <ul className="stay-amenities list-plain" aria-label="Amenities">
           {stay.amenities.slice(0, 6).map((a) => (
             <li key={a}>
