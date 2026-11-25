@@ -29,7 +29,7 @@ import { Emoji } from '../components/ui.jsx'
 import { useNow } from '../context/ClockContext.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { useTrips } from '../context/TripsContext.jsx'
-import { PACES } from '../data/categories.js'
+import { PACES, PRIORITIES } from '../data/categories.js'
 import { fitToBudget } from '../engine/budget.js'
 import { smartSortAll } from '../engine/edit.js'
 import { buildIcs } from '../engine/ics.js'
@@ -274,6 +274,7 @@ export function TripPage({ id, query }) {
   }
 
   const pace = PACES[trip.params.pace]
+  const priority = PRIORITIES[trip.params.priority]
 
   return (
     <div className="trip-page">
@@ -305,6 +306,11 @@ export function TripPage({ id, query }) {
               <li>
                 <Emoji>{pace?.emoji}</Emoji> {pace?.label} pace
               </li>
+              {priority && trip.params.priority !== 'balanced' && (
+                <li>
+                  <Emoji>{priority.emoji}</Emoji> {priority.label} first
+                </li>
+              )}
               <li>
                 <Emoji>💰</Emoji> {fmt.money(budget.total)} of {fmt.money(budget.budget)}
               </li>
