@@ -1,6 +1,6 @@
 /**
  * A link that opens the planner pre-filled with this trip's details (route,
- * dates, group, budget, pace, interests). Edits made after planning aren't
+ * dates, group, budget, pace, priority, interests). Edits made after planning aren't
  * included — it's a starting point, not a copy.
  */
 export function shareUrl(trip) {
@@ -16,5 +16,6 @@ export function shareUrl(trip) {
     i: p.interests.join(','),
   })
   if (p.mobility === 'low-walking') q.set('m', 'low')
+  if (p.priority && p.priority !== 'balanced') q.set('prio', p.priority)
   return `${window.location.origin}${window.location.pathname}#/?${q}`
 }
