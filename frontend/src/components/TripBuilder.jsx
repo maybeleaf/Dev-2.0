@@ -1,6 +1,6 @@
 import { forwardRef, useMemo } from 'react'
 import { AlertTriangle, CalendarDays, Coins, MapPin, PlaneTakeoff, Shuffle, Sparkles, Users } from 'lucide-react'
-import { CATEGORIES, INTERESTS, PACES } from '../data/categories.js'
+import { CATEGORIES, INTERESTS, PACES, PRIORITIES } from '../data/categories.js'
 import { DESTINATIONS } from '../data/index.js'
 import { useFormat } from '../hooks/useFormat.js'
 import { CURRENCIES } from '../lib/money.js'
@@ -169,6 +169,14 @@ export const TripBuilder = forwardRef(function TripBuilder(
             onChange={(v) => setField({ pace: v })}
             block
             options={Object.entries(PACES).map(([value, p]) => ({ value, label: p.label, emoji: p.emoji, title: p.blurb }))}
+          />
+          <Segmented
+            name="tb-priority"
+            legend="What matters most?"
+            value={form.priority}
+            onChange={(v) => setField({ priority: v })}
+            block
+            options={Object.entries(PRIORITIES).map(([value, p]) => ({ value, label: p.label, emoji: p.emoji, title: p.blurb }))}
           />
         </div>
 
