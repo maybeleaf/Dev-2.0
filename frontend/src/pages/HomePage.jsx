@@ -57,6 +57,7 @@ function initialForm(query, settings, today) {
     budgetTouched: Number(query.b) > 0,
     interests: query.i ? query.i.split(',').filter(Boolean) : ['sightseeing', 'food', 'culture'],
     pace: ['relaxed', 'balanced', 'packed'].includes(query.pace) ? query.pace : 'balanced',
+    priority: ['cheapest', 'balanced', 'nicest'].includes(query.prio) ? query.prio : 'balanced',
     mobility: query.m === 'low' ? 'low-walking' : 'standard',
   }
 }
@@ -131,6 +132,7 @@ export function HomePage({ query }) {
     }
     if (parsed.interests.length) patch.interests = [...new Set(parsed.interests)]
     if (parsed.pace) patch.pace = parsed.pace
+    if (parsed.priority) patch.priority = parsed.priority
     if (parsed.mobility) patch.mobility = parsed.mobility
     if (!parsed.destinationId && (parsed.vibes.length || parsed.interests.length)) {
       const o = AIRPORT_BY_CODE[patch.origin || form.origin]
@@ -233,6 +235,7 @@ export function HomePage({ query }) {
       currency: fmt.currency,
       interests: form.interests,
       pace: form.pace,
+      priority: form.priority,
       mobility: form.mobility,
     }
     const errs = validateParams(params, { origin, dest, today })

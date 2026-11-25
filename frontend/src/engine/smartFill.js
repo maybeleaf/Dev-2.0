@@ -60,6 +60,14 @@ const PACE_WORDS = {
   packed: ['packed', 'busy', 'see everything', 'action-packed', 'jam-packed', 'as much as possible', 'nonstop'],
 }
 
+// What the traveller cares about most. Maps onto the ranker presets
+// (cheapest / balanced / nicest). Saying both ("cheap but comfy") → balanced.
+const PRIORITY_WORDS = {
+  cheapest: ['cheap', 'cheapest', 'cheaply', 'on a budget', 'budget trip', 'budget-friendly', 'budget friendly', 'tight budget', 'low budget', 'affordable', 'inexpensive', 'broke', 'save money', 'saving money', 'as cheap as possible', 'price matters'],
+  nicest: ['comfort', 'comfortable', 'comfy', 'cozy', 'luxury', 'luxurious', 'fancy', 'splurge', 'treat ourselves', 'treat myself', 'upscale', 'high-end', 'high end', 'five star', '5 star', '5-star', 'nice hotel', 'nice hotels', 'nice stay', 'honeymoon'],
+  balanced: ['balanced', 'best value', 'good value', 'value for money', 'bang for our buck', 'bang for my buck', 'bang for the buck'],
+}
+
 const MOBILITY_WORDS = ['wheelchair', 'accessible', 'mobility', 'less walking', 'limited walking', 'not much walking', 'stroller', 'pram', 'cane', 'walker', 'elderly', 'grandparents']
 
 const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -180,6 +188,8 @@ export function parseTripText(input, { airports, destinations, today = todayStr(
   if (out.vibes.includes('beach') && !out.interests.includes('relax')) out.interests.push('relax')
   for (const [key, words] of Object.entries(PACE_WORDS)) if (words.some((w) => hasWord(text, w))) out.pace = key
   if (MOBILITY_WORDS.some((w) => hasWord(text, w))) out.mobility = 'low-walking'
+  const wants = Object.keys(PRIORITY_WORDS).filter((key) => PRIORITY_WORDS[key].some((w) => hasWord(text, w)))
+  if (wants.length) out.priority = wants.length === 1 ? wants[0] : 'balanced'
 
   const interestEmoji = { food: '🍜', culture: '🏛️', shopping: '🛍️', nature: '🌿', nightlife: '🌙', relax: '🧖', sightseeing: '📸' }
   for (const i of out.interests) chip(`i-${i}`, interestEmoji[i], i[0].toUpperCase() + i.slice(1))
@@ -187,5 +197,6 @@ export function parseTripText(input, { airports, destinations, today = todayStr(
   for (const v of out.vibes) chip(`v-${v}`, vibeEmoji[v], v === 'offbeat' ? 'Somewhere new' : v[0].toUpperCase() + v.slice(1))
   if (out.pace) chip('pace', out.pace === 'relaxed' ? '🐢' : '⚡', out.pace === 'relaxed' ? 'Relaxed pace' : 'Packed pace')
   if (out.mobility) chip('mobility', '♿', 'Less walking')
+  if (out.priority) chip('priority', { cheapest: '💸', balanced: '⚖️', nicest: '🛋️' }[out.priority], `Priority: ${{ cheapest: 'best price', balanced: 'balanced', nicest: 'comfort' }[out.priority]}`)
   return out
 }

@@ -97,6 +97,14 @@ export const WEATHER = {
 
 export const INTERESTS = ['sightseeing', 'food', 'shopping', 'culture', 'nature', 'nightlife', 'relax']
 
+// What matters most for this trip. Keys match the backend ranker's preset modes
+// (POST /stays/rank "mode"), so the Stay tab can pass them straight through.
+export const PRIORITIES = {
+  cheapest: { label: 'Best price', emoji: '💸', blurb: 'Save where you can — price comes first' },
+  balanced: { label: 'Balanced', emoji: '⚖️', blurb: 'A fair mix of price and quality' },
+  nicest: { label: 'Comfort', emoji: '🛋️', blurb: 'Nicer, better-rated places, even if they cost more' },
+}
+
 export const PACES = {
   // activeMin = target minutes of sights/activities per full day (meals not included).
   relaxed: { label: 'Relaxed', emoji: '🐢', blurb: '2–3 things a day, long lunches', start: 9.5, end: 21.5, activeMin: 230, maxMains: 3 },

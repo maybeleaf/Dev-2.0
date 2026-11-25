@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Sparkles, SlidersHorizontal } from 'lucide-react'
 import { StayCard } from '../../components/StayCard.jsx'
 import { ChipGroup, Segmented } from '../../components/ui.jsx'
-import { AMENITIES } from '../../data/categories.js'
+import { AMENITIES, PRIORITIES } from '../../data/categories.js'
 import { selectStay } from '../../engine/edit.js'
 import { stayKind, stayTotal } from '../../engine/stays.js'
 import { useFormat } from '../../hooks/useFormat.js'
@@ -14,6 +14,7 @@ const RANK_MODES = [
   { value: 'balanced', label: 'Balanced' },
   { value: 'nicest', label: 'Nicest' },
 ]
+const RANK_MODE_VALUES = RANK_MODES.map((m) => m.value)
 
 const FILTER_AMENITIES = ['kitchen', 'washer', 'ac', 'pool', 'breakfast', 'workspace', 'step-free', 'parking']
 
@@ -31,7 +32,9 @@ export function StayTab({ view }) {
   const [minRating, setMinRating] = useState('0')
   const [amen, setAmen] = useState(trip.params.mobility === 'low-walking' ? ['step-free'] : [])
   const [sort, setSort] = useState('match')
-  const [rankMode, setRankMode] = useState('balanced')
+  // Start from the trip's "what matters most" (set in the form or read from the prompt).
+  const tripPriority = RANK_MODE_VALUES.includes(trip.params.priority) ? trip.params.priority : 'balanced'
+  const [rankMode, setRankMode] = useState(tripPriority)
 
   // What's left for the stay once flights and the days out are paid for.
   const stayBudget = budget ? budget.budget - (budget.total - budget.amounts.stay) : trip.params.budgetUSD
@@ -162,6 +165,7 @@ export function StayTab({ view }) {
               <p className="stays-rank-status muted small" aria-live="polite">
                 {ranking.status === 'loading' && 'Ranking stays…'}
                 {ranked && `Ranked by price and rating against your ${fmt.money(Math.max(0, stayBudget))} stay budget.`}
+                {ranked && rankMode === tripPriority && tripPriority !== 'balanced' && ` Matching your trip priority: ${PRIORITIES[tripPriority].label.toLowerCase()}.`}
                 {ranking.status === 'offline' && 'The ranker isn’t reachable right now, so these are sorted by best value instead.'}
               </p>
               {ranked && ranking.warning && <p className="stays-rank-warning small">{ranking.warning}</p>}
